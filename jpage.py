@@ -216,8 +216,8 @@ def buildSettings(cursor, gap=700000):
         feeddata = cursor.fetchone()
         if feeddata[1] not in feeds:
             feeds[feeddata[1]] = list()
-        #timestring = arrow.get(float(r[3])).to('US/Eastern').humanize()
-        timestring = arrow.get(float(r[3])).shift(hours=-5).humanize() # ugh the timezone issue is tricky!
+        timestring = arrow.get(float(r[3])).to('US/Eastern').humanize() # NEED TO MAKE THIS CONFIGURABLE
+        #timestring = arrow.get(float(r[3])).shift(hours=-5).humanize() # ugh the timezone issue is tricky!
         if abs(time.time() - float(r[3])) < gap:
             feeds[feeddata[1]].append(tuple([r[4], timestring, r[1], r[5], r[3]])) # keep the epoch time for sorting
     for f in [_ for _ in feeds if len(feeds[_])>0]:
