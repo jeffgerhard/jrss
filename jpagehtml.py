@@ -23,6 +23,7 @@ figure out how to do an async page load for anything like bg images (for example
 """
 from yattag import Doc
 from datetime import datetime
+from datetime import timedelta
 import inflect
 from slugify import slugify
 import base64
@@ -91,7 +92,7 @@ def head(settings):
 def infobox():
     doc, tag, text, line = Doc().ttl()
     with tag('div', ('id', 'infobox'), klass='info'):
-        now = datetime.now()
+        now = datetime.now() - timedelta(hours=5)  # THIS NEEDS TO BE USER CONFIGURABLE!!!
         updatestring = now.strftime('%a') + '., ' + now.strftime('%b') + '. '
         updatestring += inflect.engine().ordinal(now.day) + ' '
         updatestring += str(int(now.strftime('%I'))) + ':' + now.strftime('%M') + ' '
