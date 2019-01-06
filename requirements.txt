@@ -3,3 +3,5 @@ feedparser>=5.2.1
 Pillow>=5.4.0
 yattag>=1.10.1
 arrow>=0.12.1
+inflect>=2.1.0
+python-slugify>=2.0.1
