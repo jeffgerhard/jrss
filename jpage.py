@@ -308,7 +308,7 @@ if __name__ == "__main__":
     feedsummary = ['\n\nSummary of feeds in the database after latest check:\n']
     for r in reversed(results):
         if r[1]:
-            feedsummary.append(r[0] + ' last updated ' + arrow.get(r[1]).shift(hours=-5).humanize() + '.')
+            feedsummary.append(r[0] + ' last updated ' + arrow.get(r[1]).to('US/Eastern').humanize() + '.') # TIME ZONE INFO HAS TO BE USER CONFIG'D
     conn.close()
     with open('index.html', 'w', encoding='utf-8') as fh:
         fh.write(x)
