@@ -1,0 +1,81 @@
+.tab-switcher {
+  position: relative;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+
+.tab {
+  float: left;
+}
+
+.tab-switcher label {
+  padding: 14px;
+  border-radius: 8px 8px 0 0;
+  border: solid 1px #ccc;
+  background: white;
+  display: block;
+  margin-left: -1px;
+  -webkit-transition: all .4s linear;
+  -moz-transition: all .4s linear;
+  -o-transition: all .4s linear;
+  -ms-transition: all .4s linear;
+  transition: all .4s linear;
+}
+
+.tab-switcher label:hover {
+  cursor: pointer;
+}
+
+.tab-content {
+  position: absolute;
+  top: 44px;
+  left: 0;
+  padding: 20px;
+  background: #fff;
+  width: 181px;
+  border: solid 1px #ccc;
+  border-top: none;
+  color: #555;
+  margin-left: -1px;
+  z-index: 1;
+  opacity: 0;
+  -webkit-transition: all .4s linear;
+  -moz-transition: all .4s linear;
+  -o-transition: all .4s linear;
+  -ms-transition: all .4s linear;
+  transition: all .4s linear;
+}
+
+.tab-switcher input[type=radio] {
+  display: none;
+}
+
+.tab-switcher input[type=radio]:checked ~ .tab-content {
+  z-index: 10;
+  opacity: 1;
+  background: #888;
+  color: white;
+}
+
+.tab-switcher input[type=radio]:checked ~ label {
+  background: #888;
+  color: white;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

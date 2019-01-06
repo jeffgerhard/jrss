@@ -1,0 +1,188 @@
+/* style from the tab-switcher at https://www.adobe.com/devnet/archive/html5/articles/using-form-elements-and-css3-to-replace-javascript.html
+with a little modification  */
+
+.tab-switcher {
+  position: relative;
+  font-size: 14px;
+}
+
+.tab {
+  float: left;
+}
+
+.tab-switcher label {
+  padding: 3px;
+  width: 40px;
+  height: 65px;
+
+  border-radius: 6px 6px 0 0;
+  border: solid 1px #ccc;
+  background: white;
+  display: block;
+  margin-left: -1px;
+  -webkit-transition: all .4s linear;
+  -moz-transition: all .4s linear;
+  -o-transition: all .4s linear;
+  -ms-transition: all .4s linear;
+  transition: all .4s linear;
+}
+
+.rotate { transform: rotate(45.0deg); width: 50px;  margin-top: 20px; margin-bottom: 10px;}
+
+.tab-switcher label:hover {
+  cursor: pointer;
+}
+
+.tab-content {
+  position: absolute;
+  top: 65px;
+  left: 0;
+  padding: 2px;
+  background: #fff;
+  width: 100%;
+  border: solid 1px #006699;
+  border-top: none;
+  color: #555;
+  margin-left: -1px;
+  z-index: 1;
+  opacity: 0;
+  -webkit-transition: all .4s linear;
+  -moz-transition: all .4s linear;
+  -o-transition: all .4s linear;
+  -ms-transition: all .4s linear;
+  transition: all .4s linear;
+}
+
+.tab-switcher input[type=radio] {
+  display: none;
+}
+
+.tab-switcher input[type=radio]:checked ~ .tab-content {
+  z-index: 10;
+  opacity: 1;
+  background: #006699;
+  color: white;
+}
+
+.tab-switcher input[type=radio]:checked ~ label {
+  background: #006699;
+  color: white;
+}
+
+/* new work 2019      */
+
+.feedblock {
+	background-color: white;
+	margin: 0;
+	padding: 0;
+}
+
+
+h4 { background:#006699;  padding: 5px; margin: 0; }
+/* styles from my old php/javascript version of this */
+
+body{
+	font-family:"Thonburi","Palatino-Roman", "calibri","Roboto Slab","RobotoSlab","Droid Serif","serif"; font-size:12px; 
+	}
+
+.feeddate, div.source { font-size: 9px; color: #63A062; }
+
+.icon { float: left; vertical-align: top; margin-right: 7px; 
+-ms-transform:rotate(-4deg); /* IE 9 */
+-webkit-transform:rotate(-4deg); /* Safari and Chrome */
+transform:rotate(-4deg);
+}
+
+.title-head      {   background-color:#006699;
+		color:#FFFFFF;
+        padding:5px; }
+
+.entries { margin: 0; padding: 0}
+.entries li { list-style-type: none; margin: 4px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+.entries a { text-decoration: none; color: #330; }
+.entries a:hover { text-decoration: underline; }
+
+.datetime { font-size: 14px; float: left; margin: 0; padding: 0; }
+ul.navigator { float: right; margin: 0; padding: 0; }
+ul.navigator li { display: inline; margin: 5px 12px; }
+.tab-switcher { clear: both }
+.bottom { text-align: center;}
+#infobox { padding-bottom: 6px;}
+
+
+/* RANDOM FONTS */
+
+.rand1 h4 { font-family: "Behrensschrift", "Zapfino"; }
+.rand2 h4 {font-family: "Celtic Hand", "Noteworthy-Light"; }
+.rand3 h4 {font-family: "express", "Markerfelt-Thin"; }
+.rand4 h4 { font-family: font-family: "Hansa","EuphemiaUCAS-Bold"; }
+.rand5 h4 { font-family: "Fraenkisch", "Marion-Bold"; }
+/* Tooltip flimflammery via http://www.webdesignerdepot.com/2012/11/how-to-create-a-simple-css3-tooltip */
+
+.tooltip{
+
+    display: inline;
+    position: relative;
+color:#333333;
+	text-decoration:none;
+}
+	.tooltip:hover{ color:#0066CC; text-decoration:underline; }
+
+	.tooltip:visited { color:#D5D5D5; text-decoration:line-through; }
+	
+.tooltip:hover:after{
+
+    background: #333;
+
+    background: rgba(0,0,0,.8);
+
+    border-radius: 5px;
+
+    bottom: 26px;
+
+    color: #fff;
+
+    content: attr(title);
+
+    left: 20%;
+
+    padding: 5px 15px;
+
+    position: absolute;
+
+    z-index: 98;
+
+    width: 220px;
+
+}
+
+.tooltip:hover:before{
+
+    border: solid;
+
+    border-color: #333 transparent;
+
+    border-width: 6px 6px 0 6px;
+
+    bottom: 20px;
+
+    content: "";
+
+    left: 50%;
+
+    position: absolute;
+
+    z-index: 99;
+
+}
+
+
+
+
+
+
+
+
+
+
+
