@@ -103,7 +103,7 @@ def infobox():
                 with tag('a', href='logs/log.txt'):
                     text('log')
             with tag('li'):
-                with tag('a', href='https://github.com/jeffgerhard/jpage'):
+                with tag('a', href='https://github.com/jeffgerhard/jrss'):
                     text('src')
         doc.stag('br', style='clear: both;')
     return doc.getvalue()
