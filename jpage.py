@@ -57,7 +57,9 @@ def schema(conn):
         category char(100) NOT NULL,
         filters char(500),
         success char(5),
-        newest_feed char(50))
+        newest_feed char(50),
+        etag char(50),
+        lastmod char(100))
     """)
     statements.append("""CREATE TABLE entries
         (id INTEGER PRIMARY KEY,
@@ -67,7 +69,7 @@ def schema(conn):
         headline char(400),
         summary char(1000),
         feed_id INTEGER)
-    """) 
+    """)
     for statement in statements:
         conn.execute(statement)    
 
@@ -101,14 +103,12 @@ def getIcon(cursor, feed):
         return 'Icon already saved in db for ' + feed[2]
     uri = feed[3]
     if 'feedburner' in uri and 'duckduckgo' in sys.modules: 
-        uri = duckit(feed[2])
-        r = duckduckgo.query(x)
+        r = duckduckgo.query(feed[2])
         if r.type == 'answer':
             return r.results[0].url        
         if uri is None:
             return 'No icon found for ' + feed[2]
     link = 'http://' + uri.split('//')[1].split('/')[0] + '/'
-    #print('attemping', link)
     try:
         icons = favicon.get(link)
 #        ilist = [i.height for i in icons]
@@ -134,74 +134,93 @@ def getIcon(cursor, feed):
 def checkFeeds(cursor):
     log = ['\n\n------------------------------\nChecking feeds...']
     alerts = list()
-    cursor.execute('SELECT id, link FROM feeds')
+    cursor.execute('SELECT id, link, etag, lastmod FROM feeds')
     rows = cursor.fetchall()
     updates = list()
     for row in rows:
-        d = feedparser.parse(row[1])
-        if d.entries:
-#            print('----------------------')
-#            print(d.feed.title)
-#            print('(found', len(d.entries), 'entries.)')
-            note = 'Parsing ' + str(row[1]) + ': '
-            note += '\n\tFound feed (title: ' + d.feed.title
-            note += ') with ' + str(len(d.entries)) + ' entries.\n\t'
-            existing_entries = 0
-            new_entries = 0
-            for _ in d.entries:
-#               try to match on guid
-                update = False
-                if 'guid' in _:
-                    update = True
-                    guid = _.guid
-                    cursor.execute('SELECT date FROM entries WHERE guid=?', (guid,))
-                    results = cursor.fetchone()
-                    if results:
-                        #print('Already in db.')
-                        update = False
-                        existing_entries += 1
-                elif 'link' in _:
-                    update = True
-                    guid = _.link
-                    cursor.execute('SELECT date FROM entries WHERE entry_uri=?', (guid,))
-                    results = cursor.fetchone()
-                    if results:
-                        #print('Already in db.')
-                        update = False
-                        existing_entries += 1
-                if update:
-                    new_entries += 1
-                    epochdate = 0
-                    feed_id = row[0]
-                    if 'published_parsed' in _:
-                        try:
-                            epochdate = time.mktime(_.published_parsed)
-                        except:
-                            pass
-                    elif 'updated_parsed' in _:
-                        try:
-                            epochdate = time.mktime(_.updated_parsed)
-                        except:
-                            pass
-                    if 'summary' in _:
-                        summary = _.summary[:500]
-                    else: 
-                        # print('No summary for', _.link)
-                   #     log.append('No summary found for feed: ' + str(_.link))
-                        summary = None
-                    updater = [_.link, guid, epochdate, _.title[:399], summary, feed_id]
-                    updates.append(tuple(updater))
-            if new_entries > 0:
-                note += str(new_entries) + ' added to db. '
-            if existing_entries > 0:
-                note += str(existing_entries) + ' were already in the db.'                
-            log.append(note)
+        checkentries = True
+        link = row[1]
+        note = 'Parsing ' + link + ': '
+        if row[2]:
+            note += '(comparing etag...)'
+            d = feedparser.parse(row[1], etag=row[2])
+        elif row[3]:
+            d = feedparser.parse(row[1], modified=row[3])
+            note += '(comparing lastmod...)'
         else:
-            alerts.append('\n*** FAILED FEED: couldn\'t parse ' + row[1] + '.')
-            # print('\n\n*** couldn\'t parse ' + row[1])
+            d = feedparser.parse(row[1])
+        if d.status == 304:
+            note += '\n\tUnmodified. (Etag or modified date match.)'
+            checkentries = False
+        elif d.status == 302:
+            note += '\n\t' + row[1] + ' was temporarily redirected based on a 302 status.'
+        elif d.status == 301:
+            alerts.append('\n * ' + link + ' HAS A 301 PERMENANENT REDIRECT\n\tUpdated to ' + d.href)
+            print('\n\t* trying to update link in database for', link)
+            cursor.execute('UPDATE feeds SET link=? WHERE id=?', (d.href, row[0],))
+        elif d.status == 401:
+            alerts.append('\n *** ' + row[1] + ' HAS A 410 GONE STATUS (ADD CODE TO TRACK THIS AND LATER DELETE THE FEED????)')
+            checkentries = False
+        if 'etag' in d:
+            if row[2] != d.etag:
+                cursor.execute('UPDATE feeds SET etag=? WHERE id=?', (d.etag, row[0],))
+        if 'modified' in d:
+            if row[3] != d.modified:
+                cursor.execute('UPDATE feeds SET lastmod=? WHERE id=?', (d.modified, row[0],))
+        if checkentries is True:
+            if d.entries:
+                note += '\n\tFound feed (title: ' + d.feed.title
+                note += ') with ' + str(len(d.entries)) + ' entries.\n\t'
+                existing_entries = 0
+                new_entries = 0
+                for _ in d.entries:
+                    update = False
+                    if 'guid' in _:
+                        update = True
+                        guid = _.guid
+                        cursor.execute('SELECT date FROM entries WHERE guid=?', (guid,))
+                        results = cursor.fetchone()
+                        if results:
+                            update = False
+                            existing_entries += 1
+                    elif 'link' in _:
+                        update = True
+                        guid = _.link
+                        cursor.execute('SELECT date FROM entries WHERE entry_uri=?', (guid,))
+                        results = cursor.fetchone()
+                        if results:
+                            update = False
+                            existing_entries += 1
+                    if update:
+                        new_entries += 1
+                        epochdate = 0
+                        feed_id = row[0]
+                        if 'published_parsed' in _:
+                            try:
+                                epochdate = time.mktime(_.published_parsed)
+                            except:
+                                pass
+                        elif 'updated_parsed' in _:
+                            try:
+                                epochdate = time.mktime(_.updated_parsed)
+                            except:
+                                pass
+                        if 'summary' in _:
+                            summary = _.summary[:400]
+                        else: 
+                            summary = None
+                        updater = [_.link, guid, epochdate, _.title[:399], summary, feed_id]
+                        updates.append(tuple(updater))
+                if new_entries > 0:
+                    note += str(new_entries) + ' added to db. '
+                if existing_entries > 0:
+                    note += str(existing_entries) + ' were already in the db.'                
+            else:
+                alerts.append('\n* FAILED FEED: couldn\'t parse ' + row[1] + '.')
+        log.append(note)
     if len(updates) > 0:
         cursor.executemany('INSERT INTO entries (entry_uri, guid, date, headline, summary, feed_id) VALUES (?, ?, ?, ?, ?, ?)', updates)
-    return alerts, log, updates
+        return alerts, log, updates
 
 
 def buildSettings(cursor, gap=700000):
@@ -237,7 +256,9 @@ def checkversion():
     with open('data/version.txt', 'r') as fh:
         return fh.read()
 
+
 if __name__ == "__main__":
+    feedparser.USER_AGENT = 'jrss/0.1.1 +https://github.com/jeffgerhard/jrss'
     # make directories if they don't exist:
     if not os.path.exists('feeds/feeds.csv'):
         raise UserWarning('There are no feeds! See setup documentation for help setting up and a demo.')

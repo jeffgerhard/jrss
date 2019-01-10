@@ -82,6 +82,8 @@ def head(settings):
     with tag('head'):
         doc.stag('meta', charset='utf-8')
         doc.stag('meta', name='viewport', content='width=device-width, initial-scale=1, maximum-scale=1')
+        doc.stag('meta', name='referrer', content="no-referrer")
+        doc.stag('meta', name='robots', content="noindex, nofollow")
         with tag('title'):
             text('JPage ~ v.', settings['version'])
         doc.stag('link', rel='stylesheet', href='style/style.css')
@@ -99,6 +101,9 @@ def infobox():
         updatestring += now.strftime('%p')
         with tag('p', klass='datetime'):
             text(updatestring)
+            with tag('small', ('id', 'refresh')):
+                with tag('span', onclick='location.reload(true)'):
+                    text(' refresh ')
         with tag('ul', klass='navigator'):
             with tag('li'):
                 with tag('a', href='logs/log.txt'):
@@ -115,19 +120,5 @@ def widgets(settings):
     return doc.getvalue()
 
 if __name__ == "__main__":
-    sections = dict()
-    sections['News'] = [{'BBC News': {'icon': 'some string',
-                                      'entries': [('Trump ready for shutdown', '4 hours ago', 'http://alink', 'summary'),
-                                                  ('Subarimala: Women who defied...', '7 hours ago', 'http://asdafdd', 'summary'),
-                                                  ('Migrant crisis: Illegal entries to EU', '6 hours ago', 'http://asfadsfdfs', 'summary')]}
-    },
-        {'LA Times': {'icon': 'some string',
-                      'entries': [('Editorial staff directory', '10 minutes ago', 'http://adssdfadsf', 'summary'),
-                                  ('The week ahead in SoCla classical music', '35 minutes ago', 'http:/adsfdsf', 'summary')]}}
-        ]
-    
-    sections['Poindextrous'] = [{'Metafilter': {'icon': 'some string',
-            'entries': [('"I\'m so excited because I love mess!"', '1 hour ago', 'http://asdffd', 'summary'),
-                        ('Friday Flash Fun (remember those?)', '4 hours ago', 'http:/adsfdsfa', 'summary')]}}]
-    settings = {'version': '0.1', 'sections': sections}
+    print('This is the HTML generator code; currently it cannot be run as a standalone module.')
     

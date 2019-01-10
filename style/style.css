@@ -108,7 +108,8 @@ ul.navigator li { display: inline; margin: 5px 12px; }
 .tab-switcher { clear: both }
 .bottom { text-align: center;}
 #infobox { padding-bottom: 6px;}
-
+#refresh { background: #ccc; color: white; padding: 0px 5px 0px 4px; margin: 0px 4px 0px 12px; }
+#refresh:hover { background: #999; }
 
 /* RANDOM FONTS */
 
