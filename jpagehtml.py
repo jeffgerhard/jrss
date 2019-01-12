@@ -101,8 +101,8 @@ def infobox():
         updatestring += now.strftime('%p')
         with tag('p', klass='datetime'):
             text(updatestring)
-            with tag('small', ('id', 'refresh')):
-                with tag('span', onclick='location.reload(true)'):
+            with tag('span', ('id', 'refresh'), onclick='location.reload(true)'):
+                with tag('small'):
                     text(' refresh ')
         with tag('ul', klass='navigator'):
             with tag('li'):

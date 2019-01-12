@@ -33,6 +33,7 @@ import feedparser
 import time
 import arrow
 import sys
+import re
 if 'duckduckgo' in sys.modules:
     import duckduckgo  # https://github.com/taciturasa/duckduckgo-python3
 
@@ -121,14 +122,15 @@ def getIcon(cursor, feed):
         pass
     if iconurl:
         img_data = requests.get(iconurl).content
-        image = Image.open(BytesIO(img_data))
-        image.thumbnail((40, 80))
-        imgByteArr = BytesIO()  # this stuff via https://stackoverflow.com/a/33117447
-        image.save(imgByteArr, format='PNG')
-        imgByteArr = imgByteArr.getvalue()
-        update = (imgByteArr, feed[0])
-        cursor.execute('UPDATE feeds SET icon=? WHERE id=?', update)
-        return 'Added icon for ' + link
+        if img_data:
+            image = Image.open(BytesIO(img_data))
+            image.thumbnail((40, 80))
+            imgByteArr = BytesIO()  # this stuff via https://stackoverflow.com/a/33117447
+            image.save(imgByteArr, format='PNG')
+            imgByteArr = imgByteArr.getvalue()
+            update = (imgByteArr, feed[0])
+            cursor.execute('UPDATE feeds SET icon=? WHERE id=?', update)
+            return 'Added icon for ' + link
     return 'No icon found for ' + link
 
 def checkFeeds(cursor):
@@ -156,7 +158,7 @@ def checkFeeds(cursor):
             note += '\n\t' + row[1] + ' was temporarily redirected based on a 302 status.'
         elif d.status == 301:
             alerts.append('\n * ' + link + ' HAS A 301 PERMENANENT REDIRECT\n\tUpdated to ' + d.href)
-            print('\n\t* trying to update link in database for', link)
+#            print('\n\t* trying to update link in database for', link)
             cursor.execute('UPDATE feeds SET link=? WHERE id=?', (d.href, row[0],))
         elif d.status == 401:
             alerts.append('\n *** ' + row[1] + ' HAS A 410 GONE STATUS (ADD CODE TO TRACK THIS AND LATER DELETE THE FEED????)')
@@ -206,7 +208,7 @@ def checkFeeds(cursor):
                             except:
                                 pass
                         if 'summary' in _:
-                            summary = _.summary[:400]
+                            summary = re.sub(re.compile('<.*?>'), '', _.summary)[:400]
                         else: 
                             summary = None
                         updater = [_.link, guid, epochdate, _.title[:399], summary, feed_id]
@@ -258,7 +260,7 @@ def checkversion():
 
 
 if __name__ == "__main__":
-    feedparser.USER_AGENT = 'jrss/0.1.1 +https://github.com/jeffgerhard/jrss'
+    feedparser.USER_AGENT = 'jrss/' + checkversion() + ' +https://github.com/jeffgerhard/jrss'
     # make directories if they don't exist:
     if not os.path.exists('feeds/feeds.csv'):
         raise UserWarning('There are no feeds! See setup documentation for help setting up and a demo.')

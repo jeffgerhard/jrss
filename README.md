@@ -1,6 +1,6 @@
 # jrss: A Python-based feed reader
 ## A modern reader in the spirit of classic web services like My Yahoo! and iGoogle, _jrss_ provides a snappy, useful reading experience in a single html file.
-### v. 0.1.1
+### v. 0.1.2
 
 This is a project to build a portal-style feed reader. There are many viewers for keeping up on feeds in the spirit of Google Reader, but I have never been able to fully replace the casual viewing style of My Yahoo! circa 2004. I use this as a method of looking at headlines on my phone.
 
@@ -32,7 +32,7 @@ The program will optionally use a duckduckgo module available [here](https://git
 
 The repo includes a demo `feeds/feeds-demo.csv` file that has some sample RSS feeds in it. Rename or copy this file as `feeds/feeds.csv` and you can edit it by adding whatever other feeds you want. There are four columns in this csv: feed name, feed category, feed url, and (not-yet-implemented) feed filter.
 
-The feeds are parsed and entries are saved in a sqlite database, and an index.html file is generated, suitable for moving and deplying on a server wherever you might like it. The program attempts to find and include favicons for the feeds (this is where that DuckDuckGo module might help for those that are hard to find).
+The feeds are parsed and entries are saved in a sqlite database, and an index.html file is generated, suitable for moving and deploying on a server wherever you might like it. The program attempts to find and include favicons for the feeds (this is where that DuckDuckGo module might help for those that are hard to find).
 
 _This is a beta version_ and needs a lot of code cleanup! But simply run the `jpage.py` after all is set up.
 
@@ -47,7 +47,7 @@ cp /srv/repos/jrss/index.html /var/www/html/
 cp -r /srv/repos/jrss/logs /var/www/html/
 ```
 
-Make sure to `chmod` this script (per [these instructions](https://askubuntu.com/questions/350861/how-to-set-a-cron-job-to-run-a-shell-script)) and make sure that your root python instance has all the reqiured packages installed.
+Make sure to `chmod` this script (per [these instructions](https://askubuntu.com/questions/350861/how-to-set-a-cron-job-to-run-a-shell-script)) and make sure that your root python instance has all the required packages installed.
 
 You can then run this script in a cron job on whatever regular basis you want. Don't spam the feed hosts by running this every minute.
 
@@ -62,7 +62,8 @@ This is not entirely finished. Future features include:
     * user-initiated database rebuild
     * re-sorting of feeds
     * per-feed limits on dates displayed or number of entries to show
-* Intelligent management of deprecated and error-riddle feeds; assessment of feed frequency.
+* Intelligent management of deprecated and error-riddle feeds; assessment of feed frequency
+* Setting up a virtual environment and/or bundling into a standalone application
 
 ### Problems and bugs
 
@@ -71,7 +72,6 @@ Some things that I will fix in the future:
 * TIME ZONES: in this early version, I have hard-coded the time zones based on my location (U.S. Eastern time) and my server's location.
 * Logging: this saves presumably useless logs in perpetuity.
 * CSS layout will break if you have many categories (this depends on your screen size and other factors).
-* The feed summaries, displayed as tooltips, can include a lot of HTML tag crud. This is sanitized and safe, but ought to be stripped out for readability.
 
 ### Credits
 
