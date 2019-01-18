@@ -36,7 +36,12 @@ import sys
 import re
 if 'duckduckgo' in sys.modules:
     import duckduckgo  # https://github.com/taciturasa/duckduckgo-python3
-
+from bleach import Cleaner
+cleaner = Cleaner(tags=['i', 'em', 'b', 'br', 'p', 'strong', 'code', 'abbr'],
+                  attributes={'*': ['style'] },
+                  styles=['color', 'background-color', 'font', 'font-family', 
+                          'font-weight', 'font-size'],
+                  strip=True)
 
 
 def schema(conn):
@@ -69,7 +74,8 @@ def schema(conn):
         date char(23),
         headline char(400),
         summary char(1000),
-        feed_id INTEGER)
+        feed_id INTEGER,
+        authors char(400))
     """)
     for statement in statements:
         conn.execute(statement)    
@@ -209,9 +215,16 @@ def checkFeeds(cursor):
                                 pass
                         if 'summary' in _:
                             summary = re.sub(re.compile('<.*?>'), '', _.summary)[:400]
+                            #summary = cleaner.clean(_.summary[:500])
+#                        elif 'authors' in _:
+#                            author = cleaner.clean(', '.join(_.authors)[:400])
                         else: 
                             summary = None
-                        updater = [_.link, guid, epochdate, _.title[:399], summary, feed_id]
+                        if 'author' in _:
+                            author = cleaner.clean(_.author[:400])
+                        else:
+                            author = None
+                        updater = [_.link, guid, epochdate, cleaner.clean(_.title[:399]), summary, feed_id, author]
                         updates.append(tuple(updater))
                 if new_entries > 0:
                     note += str(new_entries) + ' added to db. '
@@ -221,7 +234,7 @@ def checkFeeds(cursor):
                 alerts.append('\n* FAILED FEED: couldn\'t parse ' + row[1] + '.')
         log.append(note)
     if len(updates) > 0:
-        cursor.executemany('INSERT INTO entries (entry_uri, guid, date, headline, summary, feed_id) VALUES (?, ?, ?, ?, ?, ?)', updates)
+        cursor.executemany('INSERT INTO entries (entry_uri, guid, date, headline, summary, feed_id, authors) VALUES (?, ?, ?, ?, ?, ?, ?)', updates)
         return alerts, log, updates
 
 
@@ -240,7 +253,7 @@ def buildSettings(cursor, gap=700000):
         timestring = arrow.get(float(r[3])).to('US/Eastern').humanize() # NEED TO MAKE THIS CONFIGURABLE
         #timestring = arrow.get(float(r[3])).shift(hours=-5).humanize() # ugh the timezone issue is tricky!
         if abs(time.time() - float(r[3])) < gap:
-            feeds[feeddata[1]].append(tuple([r[4], timestring, r[1], r[5], r[3]])) # keep the epoch time for sorting
+            feeds[feeddata[1]].append(tuple([r[4], timestring, r[1], r[5], r[3], r[7]])) # keep the epoch time for sorting
     for f in [_ for _ in feeds if len(feeds[_])>0]:
         cursor.execute('SELECT icon, category FROM feeds WHERE feed_name=?', (f,))
         feeddata = cursor.fetchone()
@@ -259,6 +272,30 @@ def checkversion():
         return fh.read()
 
 
+def humanbytes(B):
+   'Return the given bytes as a human friendly KB, MB, GB, or TB string'
+#via http://stackoverflow.com/a/31631711
+   B = float(B)
+   KB = float(1024)
+   MB = float(KB ** 2) # 1,048,576
+   GB = float(KB ** 3) # 1,073,741,824
+   TB = float(KB ** 4) # 1,099,511,627,776
+
+   if B < KB:
+      return '{0} {1}'.format(B,'Bytes' if 0 == B > 1 else 'Byte')
+   elif KB <= B < MB:
+      return '{0:.2f} KB'.format(B/KB)
+   elif MB <= B < GB:
+      return '{0:.2f} MB'.format(B/MB)
+   elif GB <= B < TB:
+      return '{0:.2f} GB'.format(B/GB)
+   elif TB <= B:
+      return '{0:.2f} TB'.format(B/TB)
+
+
+def dbsize(dbfile):
+    return humanbytes(os.stat(dbfile).st_size)
+
 if __name__ == "__main__":
     feedparser.USER_AGENT = 'jrss/' + checkversion() + ' +https://github.com/jeffgerhard/jrss'
     # make directories if they don't exist:
@@ -271,6 +308,7 @@ if __name__ == "__main__":
     alerts = ['ALERTS:']
     conn = sqlite3.connect(dbfile) # Warning: This file is created in the current directory
     cursor = conn.cursor()
+    dbsummary = ['\nBeginning database size: ' + dbsize(dbfile)]  # later also add db details like no. of entries and feeds
     # first let's see if the db is set up
     try:
         cursor.execute('SELECT version FROM schema')
@@ -307,7 +345,7 @@ if __name__ == "__main__":
 #    cats, pages, results = buildModules(cursor)
     conn.commit()
     from jpagehtml import frame
-    feeds, settings = buildSettings(cursor) 
+    feeds, settings = buildSettings(cursor, gap=108000) 
     x = frame(settings)
     # do some database maintenance
     # look at the feeds already parsed above
@@ -315,7 +353,7 @@ if __name__ == "__main__":
     deletes = list()
     for f in [_ for _ in feeds if len(feeds[_])>0]:
         sortedlist = sorted(feeds[f], key=lambda x: x[4])
-        lastupdate = sortedlist[-1][-1]
+        lastupdate = sortedlist[-1][4]
 #        log.append(f + ' last updated ' + arrow.get(lastupdate).shift(hours=-5).humanize())
         updates.append(tuple([lastupdate, 'True', f]))
         if len(sortedlist) > 40:
@@ -325,7 +363,7 @@ if __name__ == "__main__":
     log.append('Purged ' + str(len(deletes)) + ' entries.')
     cursor.executemany('UPDATE feeds SET newest_feed=?, success=? WHERE feed_name=?', updates)
     conn.commit()    
-
+    dbsummary.append('\nFinal database size: ' + dbsize(dbfile))
     cursor.execute('SELECT feed_name, newest_feed FROM feeds ORDER BY newest_feed')
     results = cursor.fetchall()
     feedsummary = ['\n\nSummary of feeds in the database after latest check:\n']
@@ -335,7 +373,7 @@ if __name__ == "__main__":
     conn.close()
     with open('index.html', 'w', encoding='utf-8') as fh:
         fh.write(x)
-    finallog = alerts + feedsummary + log + setuplog
+    finallog = alerts + dbsummary + feedsummary + log + setuplog
     with open('logs/log.txt', 'w') as fh:
         fh.write('\n'.join(finallog))
     now = arrow.utcnow()

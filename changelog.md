@@ -1,12 +1,23 @@
 # Changelog
 
-## [1.0.2] - 2018-01-12
+## [1.0.3] - 2019-01-18
+
+### Added
+* Included feed authors by default, in database and page display
+* Database size info to logs
+
+### Changed
+* Tweaked method of stripping out HTML tags, using `bleach` module to allow innocuous tags in feed titles
+* Changed default display to just the past 30ish hours; still need to make this easier to configure
+
+## [1.0.2] - 2019-01-12
 
 ### Changed
 * Removed html in summaries
 * Small layout, bug, and css fixes
 
-## [1.0.1] - 2018-01-10
+## [1.0.1] - 2019-01-10
+
 ### Added
 * Awareness of [ETag and Last-Modified Headers](https://pythonhosted.org/feedparser/http-etag.html) and [HTTP Redirects](https://pythonhosted.org/feedparser/http-redirect.html)
 * jrss user-agent string

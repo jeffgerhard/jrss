@@ -29,6 +29,8 @@ from slugify import slugify
 import base64
 import random
 
+
+
 def frame(settings):
     doc, tag, text, line = Doc().ttl()
     doc.asis('<!DOCTYPE html>')
@@ -59,9 +61,15 @@ def frame(settings):
                                             with tag('ul', klass='entries'):
                                                 with tag('li'):
                                                     with tag('a', href=entry[2], target='_blank', klass='tooltip', title=checkNulls(entry[3])):
-                                                        text(entry[0])
+#                                                         text(entry[0])
+#                                                    with tag('a', href=entry[2], target='_blank', klass='tooltip', title=checkNulls(cleaner.clean(entry[3]))):
+#                                                        doc.asis(cleaner.clean(entry[0]))
+                                                        doc.asis(entry[0])
                                                     with tag('small', klass='feeddate'):
                                                         text(' ', entry[1])
+                                                    if entry[5]:
+                                                        with tag('span', klass='author'):
+                                                            text(' | ', entry[5])
                             with tag('p', onclick='window.scrollTo(0, 0);', klass='bottom'):
                                 text('[return to top]')
 #                            with tag('div', klass='feedblock'):
@@ -85,7 +93,7 @@ def head(settings):
         doc.stag('meta', name='referrer', content="no-referrer")
         doc.stag('meta', name='robots', content="noindex, nofollow")
         with tag('title'):
-            text('JPage ~ v.', settings['version'])
+            text('Jrss ~ v.', settings['version'])
         doc.stag('link', rel='stylesheet', href='style/style.css')
 #        with tag('script', ('type', 'text/javascript')):
 #            text('')
