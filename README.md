@@ -1,6 +1,6 @@
 # jrss: A Python-based feed reader
 ## A modern reader in the spirit of classic web services like My Yahoo! and iGoogle, _jrss_ provides a snappy, useful reading experience in a single html file.
-### v. 0.1.2
+### v. 0.1.4
 
 This is a project to build a portal-style feed reader. There are many viewers for keeping up on feeds in the spirit of Google Reader, but I have never been able to fully replace the casual viewing style of My Yahoo! circa 2004. I use this as a method of looking at headlines on my phone.
 
@@ -45,6 +45,7 @@ For my personal use case, I set up a bash script on a linux server that runs the
 python /srv/repos/jrss/jpage.py
 cp /srv/repos/jrss/index.html /var/www/html/
 cp -r /srv/repos/jrss/logs /var/www/html/
+cp -r /srv/repoas/jrss/style /var/www/html/
 ```
 
 Make sure to `chmod` this script (per [these instructions](https://askubuntu.com/questions/350861/how-to-set-a-cron-job-to-run-a-shell-script)) and make sure that your root python instance has all the required packages installed.

@@ -36,7 +36,10 @@ import sys
 import re
 if 'duckduckgo' in sys.modules:
     import duckduckgo  # https://github.com/taciturasa/duckduckgo-python3
+import html
 from bleach import Cleaner
+
+
 cleaner = Cleaner(tags=['i', 'em', 'b', 'br', 'p', 'strong', 'code', 'abbr'],
                   attributes={'*': ['style'] },
                   styles=['color', 'background-color', 'font', 'font-family', 
@@ -214,17 +217,20 @@ def checkFeeds(cursor):
                             except:
                                 pass
                         if 'summary' in _:
-                            summary = re.sub(re.compile('<.*?>'), '', _.summary)[:400]
+                            summary = html.unescape(_.summary)
+                            summary = summary.replace('<p>', '\n\n<p>')
+                            summary = summary.replace('<li>', '\n  • <li>')
+                            summary = re.sub(re.compile('<.*?>'), '', summary)[:400]
                             #summary = cleaner.clean(_.summary[:500])
 #                        elif 'authors' in _:
 #                            author = cleaner.clean(', '.join(_.authors)[:400])
                         else: 
                             summary = None
                         if 'author' in _:
-                            author = cleaner.clean(_.author[:400])
+                            author = cleaner.clean(html.unescape(_.author))[:400]
                         else:
                             author = None
-                        updater = [_.link, guid, epochdate, cleaner.clean(_.title[:399]), summary, feed_id, author]
+                        updater = [_.link, guid, epochdate, cleaner.clean(html.unescape(_.title))[:399], summary.strip(), feed_id, author]
                         updates.append(tuple(updater))
                 if new_entries > 0:
                     note += str(new_entries) + ' added to db. '

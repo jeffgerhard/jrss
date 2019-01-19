@@ -57,6 +57,32 @@ def frame(settings):
                                             encoded = base64.b64encode(curfeed[key]['icon']).decode() 
                                             doc.stag('img', src='data:image/png;base64,{}'.format(encoded), klass='icon')
                                         line('h4', key)
+                                        # see what kind of authors there are (if any)...
+                                        authors = []
+                                        authortype = None
+                                        for entry in curfeed[key]['entries']:
+                                            if entry[5]:
+                                                authors.append(entry[5])
+                                        if len(authors) > 0:
+                                            if len(set(authors)) == 1:
+                                                authortype = 'single'
+                                            else:
+                                                spaced = 0
+                                                kinja = False
+                                                for au in authors:
+                                                    if ' ' in au:
+                                                        spaced += 1
+                                                    if ' on ' in au and ', shared' in au:
+                                                        kinja = True
+                                                if kinja is True:
+                                                    authortype = 'kinja'
+                                                else:
+                                                    if spaced == 0:
+                                                        authortype = 'unspaced'
+                                                    elif spaced < (len(authors) // 2):
+                                                        authortype = 'unspaced'
+                                                    else:
+                                                        authortype = 'spaced'
                                         for entry in curfeed[key]['entries'][:15]:
                                             with tag('ul', klass='entries'):
                                                 with tag('li'):
@@ -65,11 +91,15 @@ def frame(settings):
 #                                                    with tag('a', href=entry[2], target='_blank', klass='tooltip', title=checkNulls(cleaner.clean(entry[3]))):
 #                                                        doc.asis(cleaner.clean(entry[0]))
                                                         doc.asis(entry[0])
+                                                    if entry[5]:
+                                                        if authortype != 'single':
+                                                            with tag('span', klass='author'):
+                                                                doc.asis(' ')
+                                                                doc.asis(cleanauthors(authortype, entry[5]))
+                                                                doc.asis(' &middot;')
                                                     with tag('small', klass='feeddate'):
                                                         text(' ', entry[1])
-                                                    if entry[5]:
-                                                        with tag('span', klass='author'):
-                                                            text(' | ', entry[5])
+
                             with tag('p', onclick='window.scrollTo(0, 0);', klass='bottom'):
                                 text('[return to top]')
 #                            with tag('div', klass='feedblock'):
@@ -126,6 +156,35 @@ def widgets(settings):
     doc, tag, text, line = Doc().ttl()
     doc.asis('<!-- insert widgets here -->')    
     return doc.getvalue()
+
+def cleanauthors(authortype, a):
+    def words2caps(x):
+        if ' ' not in x:
+            return x.upper()
+        segs = list()
+        words = x.split(' ')
+        for word in words:
+            if word.lower() in ['the', 'a', 'an', 'of', 'for', 'on', 'by', 'to',
+                                'from', 'as', 'and', 'with']:
+                segs.append(word)
+            else:
+                segs.append(word.upper())
+        return ' '.join(segs)
+    if authortype:
+        if authortype == 'kinja':
+            if ' on ' in a and ', shared by' in a:
+                a = a.split(', shared by')[0]
+                return words2caps(a.split(' on ')[0]) + ' on ' + a.split(' on ')[1]
+        elif authortype == 'unspaced':
+            return a
+    if '@' in a and '(' in a:  # email address and then a name in parentheses...
+        a = a[a.find('(')+1:a.find(')')]
+    if '(' in a:
+        # if still has parenthetical info don't wanna capitalize it
+        return words2caps(a.split('(')[0]) + '(' + a.split(')')[1]
+    if ' ' in a:
+        return words2caps(a)
+    return a
 
 if __name__ == "__main__":
     print('This is the HTML generator code; currently it cannot be run as a standalone module.')
