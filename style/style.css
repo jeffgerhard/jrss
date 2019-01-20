@@ -109,8 +109,8 @@ ul.navigator { float: right; margin: 0; padding: 0; }
 ul.navigator li { display: inline; margin: 5px 12px; }
 .tab-switcher { clear: both }
 .bottom { text-align: center;}
-#infobox { padding-bottom: 6px;}
-#refresh { background: #ccc; color: white; padding: 0px 5px 0px 4px; margin: 0px 4px 0px 12px; }
+#infobox { padding-bottom: 36px; }
+#refresh { background: #ccc; color: white; padding: 0px 5px 3px 4px; margin: 0px 4px 0px 12px; border-radius: 6px; }
 #refresh:hover { background: #999; }
 
 /* RANDOM FONTS */
@@ -146,7 +146,7 @@ color:#333333;
     color: #fff;
 
     content: attr(title);
-white-space: pre-line;
+	white-space: pre-line;
     left: 20%;
 
     padding: 5px 15px;
@@ -155,7 +155,7 @@ white-space: pre-line;
 
     z-index: 98;
 
-    width: 220px;
+    width: 340px;
 
 }
 

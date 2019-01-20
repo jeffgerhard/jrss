@@ -184,6 +184,7 @@ def checkFeeds(cursor):
                 note += ') with ' + str(len(d.entries)) + ' entries.\n\t'
                 existing_entries = 0
                 new_entries = 0
+                repeated_entries = 0
                 for _ in d.entries:
                     update = False
                     if 'guid' in _:
@@ -202,6 +203,14 @@ def checkFeeds(cursor):
                         if results:
                             update = False
                             existing_entries += 1
+                    else:
+                        update = True
+                        t = _.title
+                        cursor.execute('SELECT headline FROM entries WHERE entry_uri=?', (t,))
+                        results = cursor.fetchone()
+                        if results:
+                            update = False
+                            repeated_entries += 1                        
                     if update:
                         new_entries += 1
                         epochdate = 0
@@ -218,9 +227,11 @@ def checkFeeds(cursor):
                                 pass
                         if 'summary' in _:
                             summary = html.unescape(_.summary)
-                            summary = summary.replace('<p>', '\n\n<p>')
+                            summary = summary.replace('\xa0', ' ').replace('<p>', '\n\n<p>')
                             summary = summary.replace('<li>', '\n  • <li>')
                             summary = re.sub(re.compile('<.*?>'), '', summary)[:400]
+                            while '\n\n\n' in summary:
+                                summary = summary.replace('\n\n\n','\n\n')
                             #summary = cleaner.clean(_.summary[:500])
 #                        elif 'authors' in _:
 #                            author = cleaner.clean(', '.join(_.authors)[:400])
@@ -236,6 +247,8 @@ def checkFeeds(cursor):
                     note += str(new_entries) + ' added to db. '
                 if existing_entries > 0:
                     note += str(existing_entries) + ' were already in the db.'                
+                if repeated_entries > 0:
+                    note += str(repeated_entries) + ' were dupes of other database entries.'
             else:
                 alerts.append('\n* FAILED FEED: couldn\'t parse ' + row[1] + '.')
         log.append(note)

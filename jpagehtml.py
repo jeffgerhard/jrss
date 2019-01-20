@@ -94,11 +94,11 @@ def frame(settings):
                                                     if entry[5]:
                                                         if authortype != 'single':
                                                             with tag('span', klass='author'):
-                                                                doc.asis(' ')
+                                                                doc.asis(' &#8961; ')
                                                                 doc.asis(cleanauthors(authortype, entry[5]))
-                                                                doc.asis(' &middot;')
                                                     with tag('small', klass='feeddate'):
-                                                        text(' ', entry[1])
+                                                        doc.asis(' &middot; ')
+                                                        text(entry[1])
 
                             with tag('p', onclick='window.scrollTo(0, 0);', klass='bottom'):
                                 text('[return to top]')
@@ -181,7 +181,7 @@ def cleanauthors(authortype, a):
         a = a[a.find('(')+1:a.find(')')]
     if '(' in a:
         # if still has parenthetical info don't wanna capitalize it
-        return words2caps(a.split('(')[0]) + '(' + a.split(')')[1]
+        return words2caps(a.split('(')[0]) + '(' + a.split('(')[1]
     if ' ' in a:
         return words2caps(a)
     return a
