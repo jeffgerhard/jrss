@@ -85,6 +85,7 @@ def schema(conn):
 
 def populate(cursor):
     log = list()
+    newfeeds = False
     with open('feeds/feeds.csv', 'r') as fh:
         feeds = [_ for _ in fh.read().splitlines() if _]
     cursor.execute('SELECT * FROM feeds')
@@ -100,12 +101,13 @@ def populate(cursor):
                 found = True
         if found is False:
             updates.append(tuple(flist))
+            newfeeds = True
  #           print('Adding', flist[0], 'to db.')
             log.append('Adding ' + str(flist[0]) + ' to db.')
     if len(updates) > 0:
         cursor.executemany('INSERT INTO feeds (feed_name, category, link, filters) VALUES (?, ?, ?, ?)', updates)
     cursor.execute('INSERT INTO schema (version) VALUES (?)', (checkversion(),))
-    return log
+    return newfeeds, log
 
 def getIcon(cursor, feed):
     iconurl = None
@@ -232,6 +234,7 @@ def checkFeeds(cursor):
                             summary = re.sub(re.compile('<.*?>'), '', summary)[:400]
                             while '\n\n\n' in summary:
                                 summary = summary.replace('\n\n\n','\n\n')
+                            summary = summary.strip()
                             #summary = cleaner.clean(_.summary[:500])
 #                        elif 'authors' in _:
 #                            author = cleaner.clean(', '.join(_.authors)[:400])
@@ -241,7 +244,7 @@ def checkFeeds(cursor):
                             author = cleaner.clean(html.unescape(_.author))[:400]
                         else:
                             author = None
-                        updater = [_.link, guid, epochdate, cleaner.clean(html.unescape(_.title))[:399], summary.strip(), feed_id, author]
+                        updater = [_.link, guid, epochdate, cleaner.clean(html.unescape(_.title))[:399], summary, feed_id, author]
                         updates.append(tuple(updater))
                 if new_entries > 0:
                     note += str(new_entries) + ' added to db. '
@@ -350,13 +353,15 @@ if __name__ == "__main__":
     # next populate the db with stuff... can do this via csvs i think..
     # set up db
     setuplog = ['\n\nSETUP (non-critical info here...):\n\nChecking the feeds csv...']
-    setuplog += populate(cursor)
+    newfeeds, addenda = populate(cursor)
+    setuplog += addenda
     # do the favicons
     cursor.execute('SELECT * FROM feeds')
     feeds = cursor.fetchall()
-    setuplog.append ('\n\nChecking favicons...')
-    for feed in feeds:
-        setuplog.append(getIcon(cursor, feed))
+    if newfeeds is True:
+        setuplog.append ('\n\nChecking favicons...')
+        for feed in feeds:
+            setuplog.append(getIcon(cursor, feed))
     # now let's try to pull in some feed content!
     a, l, updates = checkFeeds(cursor)
     log += l
@@ -375,13 +380,26 @@ if __name__ == "__main__":
         lastupdate = sortedlist[-1][4]
 #        log.append(f + ' last updated ' + arrow.get(lastupdate).shift(hours=-5).humanize())
         updates.append(tuple([lastupdate, 'True', f]))
-        if len(sortedlist) > 40:
-            for entry in sortedlist[:len(sortedlist)-39]:
-                deletes.append(tuple([entry[0], entry[4]]))
-    cursor.executemany('DELETE FROM entries WHERE headline=? AND date=?', deletes)
-    log.append('Purged ' + str(len(deletes)) + ' entries.')
+#        if len(sortedlist) > 40:
+#            for entry in sortedlist[:len(sortedlist)-39]:
+#                deletes.append(tuple([entry[0], entry[4]]))
+#    cursor.executemany('DELETE FROM entries WHERE headline=? AND date=?', deletes)
+#    log.append('Purged ' + str(len(deletes)) + ' entries.')
+    # THE ABOVE WASN'T RIGHT... TRY AGAIN TO DELETE OLD FEEDS BELOW
     cursor.executemany('UPDATE feeds SET newest_feed=?, success=? WHERE feed_name=?', updates)
+    for f in range(0, len(feeds) + 20):
+        cursor.execute('SELECT id, entry_uri, date FROM entries WHERE feed_id=?', (f,))
+        rows = cursor.fetchall()
+        if len(rows) > 40:
+            s = sorted(rows, key=lambda x: x[2])
+            for _ in s[:39]:
+                deletes.append(_[0])  # just m ake a list of db ids to delete
+    if deletes:
+        for d in deletes:
+            cursor.execute('DELETE FROM entries WHERE id=?', (d,))
+        log.append('Purged ' + str(len(deletes)) + ' entries.')
     conn.commit()    
+    conn.execute('VACUUM')
     dbsummary.append('\nFinal database size: ' + dbsize(dbfile))
     cursor.execute('SELECT feed_name, newest_feed FROM feeds ORDER BY newest_feed')
     results = cursor.fetchall()

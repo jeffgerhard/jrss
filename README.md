@@ -1,6 +1,6 @@
 # jrss: A Python-based feed reader
 ## A modern reader in the spirit of classic web services like My Yahoo! and iGoogle, _jrss_ provides a snappy, useful reading experience in a single html file.
-### v. 0.1.4
+### v. 0.1.5
 
 This is a project to build a portal-style feed reader. There are many viewers for keeping up on feeds in the spirit of Google Reader, but I have never been able to fully replace the casual viewing style of My Yahoo! circa 2004. I use this as a method of looking at headlines on my phone.
 

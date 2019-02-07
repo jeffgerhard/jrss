@@ -147,7 +147,7 @@ color:#333333;
 
     content: attr(title);
 	white-space: pre-line;
-    left: 20%;
+    left: 8%;
 
     padding: 5px 15px;
 
@@ -155,7 +155,7 @@ color:#333333;
 
     z-index: 98;
 
-    width: 340px;
+    width: 300px;
 
 }
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.5] - 2019-02-07
+
+### Changed
+* Stopped searching for favicons over and over (sorry, non-icon-having websites!)
+* Minor bugfix on data cleanup of incoming XML
+* Minor stylesheet updates
+* Revised the delete-old-function functionality and added the SQL VACUUM command which I was not aware even existed?
+
 ## [0.1.4] - 2019-01-19
 
 ### Changed
