@@ -244,7 +244,12 @@ def checkFeeds(cursor):
                             author = cleaner.clean(html.unescape(_.author))[:400]
                         else:
                             author = None
-                        updater = [_.link, guid, epochdate, cleaner.clean(html.unescape(_.title))[:399], summary, feed_id, author]
+                        link = None
+                        try:
+                            link = _.link
+                        except:
+                            link = '[no link]'
+                        updater = [link, guid, epochdate, cleaner.clean(html.unescape(_.title))[:399], summary, feed_id, author]
                         updates.append(tuple(updater))
                 if new_entries > 0:
                     note += str(new_entries) + ' added to db. '
