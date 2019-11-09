@@ -162,6 +162,12 @@ def checkFeeds(cursor):
             note += '(comparing lastmod...)'
         else:
             d = feedparser.parse(row[1])
+        try:
+            _ = d.status
+        except AttributeError:
+            alerts.append('\n *** ' + row[1] + ' HAS A MAJOR ERROR IN FEED')
+            d.status = 0
+            checkentries = False
         if d.status == 304:
             note += '\n\tUnmodified. (Etag or modified date match.)'
             checkentries = False
@@ -213,7 +219,7 @@ def checkFeeds(cursor):
                         if results:
                             update = False
                             repeated_entries += 1                        
-                    if update:
+                    if update is True:
                         new_entries += 1
                         epochdate = 0
                         feed_id = row[0]
@@ -240,6 +246,10 @@ def checkFeeds(cursor):
 #                            author = cleaner.clean(', '.join(_.authors)[:400])
                         else: 
                             summary = None
+                        if 'title' in _:
+                            title = cleaner.clean(html.unescape(_.title))[:399]
+                        else:
+                            title  = None
                         if 'author' in _:
                             author = cleaner.clean(html.unescape(_.author))[:400]
                         else:
@@ -249,7 +259,7 @@ def checkFeeds(cursor):
                             link = _.link
                         except:
                             link = '[no link]'
-                        updater = [link, guid, epochdate, cleaner.clean(html.unescape(_.title))[:399], summary, feed_id, author]
+                        updater = [link, guid, epochdate, title, summary, feed_id, author]
                         updates.append(tuple(updater))
                 if new_entries > 0:
                     note += str(new_entries) + ' added to db. '
