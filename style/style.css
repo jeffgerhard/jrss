@@ -82,11 +82,11 @@ h4 { background:#006699;  padding: 5px; margin: 0; }
 /* styles from my old php/javascript version of this */
 
 body{
-	font-family:"Thonburi","Palatino-Roman", "calibri","Roboto Slab","RobotoSlab","Droid Serif","serif"; font-size:12px; 
+	font-family:"Thonburi","Palatino-Roman", "calibri","Roboto Slab","RobotoSlab","Droid Serif","Noto Serif","serif"; font-size:12px; 
 	}
 
-.feeddate, div.source { font-size: 9px; color: #63A062; font-family: "AvenirNextCondensed-Regular"}
-.author { color: #778; font-size: 10px; font-family: "AvenirNextCondensed-Italic"}
+.feeddate, div.source { font-size: 9px; color: #63A062; font-family: "AvenirNextCondensed-Regular","Nimbus Sans Narrow"}
+.author { color: #778; font-size: 10px; font-family: "AvenirNextCondensed-Italic","Nimbus Sans Narrow-Italic","Nimbus Sans Narrow"}
 
 
 .icon { float: left; vertical-align: top; margin-right: 7px; 
@@ -115,9 +115,9 @@ ul.navigator li { display: inline; margin: 5px 12px; }
 
 /* RANDOM FONTS */
 
-.rand1 h4 { font-family: "Behrensschrift", "Zapfino"; }
-.rand2 h4 {font-family: "Celtic Hand", "Noteworthy-Light"; }
-.rand3 h4 {font-family: "express", "Markerfelt-Thin"; }
+.rand1 h4 { font-family: "Behrensschrift", "Zapfino", "Z003"; }
+.rand2 h4 {font-family: "Celtic Hand", "Noteworthy-Light", "Inconsolata"; }
+.rand3 h4 {font-family: "express", "Markerfelt-Thin", fantasy; }
 .rand4 h4 { font-family: font-family: "Hansa","EuphemiaUCAS-Bold"; }
 .rand5 h4 { font-family: "Fraenkisch", "Marion-Bold"; }
 /* Tooltip flimflammery via http://www.webdesignerdepot.com/2012/11/how-to-create-a-simple-css3-tooltip */

@@ -25,7 +25,7 @@ import os
 import requests
 import favicon
 # import json
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from io import BytesIO
 import feedparser
 #from dateutil.parser import parse
@@ -38,11 +38,11 @@ if 'duckduckgo' in sys.modules:
     import duckduckgo  # https://github.com/taciturasa/duckduckgo-python3
 import html
 from bleach import Cleaner
-
+import re
 
 cleaner = Cleaner(tags=['i', 'em', 'b', 'br', 'p', 'strong', 'code', 'abbr'],
                   attributes={'*': ['style'] },
-                  styles=['color', 'background-color', 'font', 'font-family', 
+                  css_sanitizer=['color', 'background-color', 'font', 'font-family', 
                           'font-weight', 'font-size'],
                   strip=True)
 
@@ -134,7 +134,10 @@ def getIcon(cursor, feed):
     if iconurl:
         img_data = requests.get(iconurl).content
         if img_data:
-            image = Image.open(BytesIO(img_data))
+            try:
+                image = Image.open(BytesIO(img_data))
+            except UnidentifiedImageError:
+                return 'No icon found for ' + link
             image.thumbnail((40, 80))
             imgByteArr = BytesIO()  # this stuff via https://stackoverflow.com/a/33117447
             image.save(imgByteArr, format='PNG')
@@ -420,8 +423,15 @@ if __name__ == "__main__":
     results = cursor.fetchall()
     feedsummary = ['\n\nSummary of feeds in the database after latest check:\n']
     for r in reversed(results):
+        print(r)
         if r[1]:
-            feedsummary.append(r[0] + ' last updated ' + arrow.get(r[1]).to('US/Eastern').humanize() + '.') # TIME ZONE INFO HAS TO BE USER CONFIG'D
+            # check for any ".0" type things in strings
+            pattern = r'\.(\d+)'
+            if re.search(pattern, r[1]):
+                dd = int(r[1][:re.search(pattern, r[1]).span()[0]])
+            else:
+                dd = r[1]
+            feedsummary.append(r[0] + ' last updated ' + arrow.get(dd).to('US/Eastern').humanize() + '.') # TIME ZONE INFO HAS TO BE USER CONFIG'D
     conn.close()
     with open('index.html', 'w', encoding='utf-8') as fh:
         fh.write(x)

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2] - 2026-10-26
+
+### Changed
+* updated python modules to current versions
+* debugged a date field in feeds
+
 ## [0.1.5] - 2019-02-07
 
 ### Changed
