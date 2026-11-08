@@ -131,7 +131,7 @@ def populate(conn):
     for r in results:
         if (r[0], r[3], r[2]) not in csv_feeds: 
             t = (r[0], r[3], r[2])
-            print(t) # name, url (which?), category
+            # print(t) # name, url (which?), category
             logger.warning(f'{t} not found in csv. Deleting')
             cursor.execute('DELETE FROM feeds where id=?', (r[1],))
     # print('csv_feeds:')
@@ -530,7 +530,7 @@ def cleanup(conn, feeds):
             #     dd = int(r[1][:re.search(pattern, r[1]).span()[0]])
             # else:
             #     dd = r[1]
-            feedsummary.append('\t' + r[0] + ' last updated ' + arrow.get((datefix(r[1]))).to('US/Eastern').humanize() + '.') # TIME ZONE INFO HAS TO BE USER CONFIG'D
+            feedsummary.append('  |\t' + r[0] + ' last updated ' + arrow.get((datefix(r[1]))).to('US/Eastern').humanize() + '.') # TIME ZONE INFO HAS TO BE USER CONFIG'D
     logger.info('\n'.join(feedsummary))
     cursor.close()
     return conn
