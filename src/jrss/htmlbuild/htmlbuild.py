@@ -22,8 +22,7 @@ figure out how to do an async page load for anything like bg images (for example
 
 """
 from yattag import Doc
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timezone, timedelta
 import inflect
 from slugify import slugify
 import base64
@@ -121,7 +120,7 @@ def head(settings):
         doc.stag('meta', charset='utf-8')
         doc.stag('meta', name='viewport', content='width=device-width, initial-scale=1, maximum-scale=1')
         doc.stag('meta', name='referrer', content="no-referrer")
-        doc.stag('meta', name='robots', content="noindex, nofollow")
+        doc.stag('meta', name='robots', content="noindex, nofollow, noai, noimageai")
         with tag('title'):
             text('Jrss ~ v.', settings['version'])
         doc.stag('link', rel='stylesheet', href='style/style.css')
@@ -132,7 +131,7 @@ def head(settings):
 def infobox():
     doc, tag, text, line = Doc().ttl()
     with tag('div', ('id', 'infobox'), klass='info'):
-        now = datetime.now() - timedelta(hours=5)  # THIS NEEDS TO BE USER CONFIGURABLE!!!
+        now = datetime.now(timezone.utc) - timedelta(hours=5)  # THIS NEEDS TO BE USER CONFIGURABLE!!!
         updatestring = now.strftime('%a') + '., ' + now.strftime('%b') + '. '
         updatestring += inflect.engine().ordinal(now.day) + ' '
         updatestring += str(int(now.strftime('%I'))) + ':' + now.strftime('%M') + ' '
@@ -144,7 +143,7 @@ def infobox():
                     text(' refresh ')
         with tag('ul', klass='navigator'):
             with tag('li'):
-                with tag('a', href='logs/log.txt'):
+                with tag('a', href='../logs/jrss.log'):
                     text('log')
             with tag('li'):
                 with tag('a', href='https://github.com/jeffgerhard/jrss'):
@@ -186,6 +185,10 @@ def cleanauthors(authortype, a):
         return words2caps(a)
     return a
 
-if __name__ == "__main__":
+def main():
     print('This is the HTML generator code; currently it cannot be run as a standalone module.')
+    
+
+if __name__ == "__main__":
+    main()
     
